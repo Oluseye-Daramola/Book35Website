@@ -1,0 +1,52 @@
+
+
+
+@media (max-width: 480px) {
+  .hero .text-display {
+    font-size: 24px;
+    line-height: 32px;
+    /* margin: 10% auto; */
+  }
+}
+
+
+.hero {
+  text-align: center;
+  padding: 40px 16px 40px;   /* was 50px */
+  max-width: 560px;
+  margin: 0 auto;
+  /* margin: 20% auto; */
+}
+
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--color-ink-navy);
+  text-decoration: none;
+} 
+
+
+.hero-ctas {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.how-it-works {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  max-width: 700px;
+  margin: 30px auto 0;
+  padding: 0 16px;
+}
+
+.how-it-works .card {
+  flex: 1;
+  min-width: 220px;   /* wraps to a new row instead of squishing */
+}

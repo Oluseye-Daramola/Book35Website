@@ -1,0 +1,929 @@
+/* ---------- Sidebar ---------- */
+.pd-sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex: 0 0 250px;
+    align-self: flex-start;
+    flex-direction: column;
+    height: 100vh;
+    min-height: 100vh;
+    padding: 32px 20px 22px;
+    overflow-y: auto;
+    background: var(--color-ink-navy);
+    color: var(--color-off-white);
+    transition:
+        flex-basis 180ms ease,
+        padding 180ms ease;
+}
+
+.pd-sidebar-collapsed {
+    flex-basis: 76px;
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+.pd-sidebar-welcome {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+    padding: 0 10px 26px;
+}
+
+.pd-sidebar-welcome p {
+    color: rgba(245, 243, 238, 0.68);
+    font-size: 13px;
+}
+
+.pd-sidebar-welcome strong {
+    overflow: hidden;
+    font-size: 18px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pd-desktop-sidebar-toggle {
+    display: inline-grid;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    margin: 0 0 26px auto;
+    padding: 8px;
+    place-items: center;
+    border: 1px solid var(--color-coral);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.pd-desktop-sidebar-toggle:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+
+.pd-desktop-sidebar-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+}
+
+.pd-mobile-menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-width: 88px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid rgb(255 255 255 / 30%);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+}
+
+.pd-mobile-menu-toggle:hover,
+.pd-mobile-menu-toggle:focus-visible {
+    background: rgb(255 255 255 / 14%);
+}
+
+.pd-menu-icon {
+    display: grid;
+    gap: 4px;
+    width: 18px;
+}
+
+.pd-menu-icon span {
+    display: block;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease;
+}
+
+.pd-menu-icon-open span:first-child {
+    transform: translateY(6px) rotate(45deg);
+}
+
+.pd-menu-icon-open span:nth-child(2) {
+    opacity: 0;
+}
+
+.pd-menu-icon-open span:last-child {
+    transform: translateY(-6px) rotate(-45deg);
+}
+
+.pd-nav {
+    display: grid;
+    gap: 4px;
+}
+
+.pd-nav-heading {
+    margin: 0 0 8px 12px;
+    color: rgb(255 255 255 / 54%);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pd-nav a,
+.pd-sidebar-account a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.pd-nav a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-left: 3px solid transparent;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    font-size: 14px;
+    transition:
+        background-color 120ms ease,
+        border-color 120ms ease;
+}
+
+.pd-nav a svg {
+    flex: 0 0 19px;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+    opacity: 0.78;
+}
+
+.pd-nav a[aria-current="location"] svg {
+    opacity: 1;
+}
+
+.pd-nav-badge {
+    display: inline-grid;
+    min-width: 22px;
+    height: 22px;
+    margin-left: auto;
+    padding: 0 6px;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: rgb(217 147 43 / 18%);
+    color: #ffd09b;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.pd-nav a:hover,
+.pd-nav a:focus-visible {
+    background: rgb(255 255 255 / 14%);
+}
+
+.pd-nav a[aria-current="location"] {
+    border-left-color: var(--color-coral);
+    background: rgb(255 255 255 / 13%);
+    font-weight: 600;
+}
+
+.pd-sidebar-account {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    gap: 0 10px;
+    margin-top: auto;
+    padding: 18px 4px 0;
+    border-top: 1px solid rgb(255 255 255 / 20%);
+}
+
+.pd-account-avatar {
+    display: grid;
+    grid-row: span 2;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 1px solid rgb(255 255 255 / 26%);
+    border-radius: 50%;
+    background: var(--color-coral);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.pd-account-avatar-button {
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+}
+
+.pd-account-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.pd-account-details {
+    display: grid;
+    min-width: 0;
+    gap: 1px;
+}
+
+.pd-account-details strong {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pd-account-details > span {
+    color: rgb(255 255 255 / 62%);
+    font-size: 11px;
+    line-height: 16px;
+}
+
+.pd-sidebar-account a {
+    grid-column: 2;
+    justify-self: start;
+    min-height: 30px;
+    padding-top: 3px;
+    color: rgb(255 255 255 / 72%);
+    font-size: 14px;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+}
+
+.pd-sidebar-account a:hover,
+.pd-sidebar-account a:focus-visible {
+    color: #fff;
+    text-decoration-color: currentColor;
+}
+
+/* Mobile stylings */
+
+@media (min-width: 861px) {
+    .pd-sidebar-collapsed .pd-sidebar-top {
+        justify-content: center;
+    }
+
+    .pd-sidebar-collapsed .pd-sidebar-welcome,
+    .pd-sidebar-collapsed .pd-nav-heading,
+    .pd-sidebar-collapsed .pd-account-details {
+        display: none;
+    }
+
+    .pd-sidebar-collapsed .pd-desktop-sidebar-toggle {
+        margin: 0 0 26px;
+    }
+
+    .pd-sidebar-collapsed .pd-nav a {
+        justify-content: center;
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+
+    .pd-sidebar-collapsed .pd-nav a > span:not(.pd-nav-badge) {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .pd-sidebar-collapsed .pd-nav-badge {
+        position: absolute;
+        top: 1px;
+        right: 0;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        font-size: 10px;
+    }
+
+    .pd-sidebar-collapsed .pd-sidebar-account {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .pd-sidebar-collapsed .pd-sidebar-account a {
+        grid-column: 1;
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+    }
+}
+
+/* ---------- Main content ---------- */
+.provider-dashboard {
+    flex: 1;
+    width: min(1120px, 100%);
+    min-width: 0;
+    margin: 0 auto;
+    padding: 38px 28px 48px;
+    color: var(--color-ink-navy);
+}
+
+.provider-dashboard [id] {
+    scroll-margin-top: 24px;
+}
+
+.pd-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "identity logo" "actions actions";
+    align-items: start;
+    gap: 16px 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.pd-header > div:first-child {
+    grid-area: identity;
+}
+
+.pd-header > img {
+    grid-area: logo;
+}
+
+.pd-header > div:last-child {
+    grid-area: actions;
+    justify-self: end;
+}
+
+.pd-header-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--color-gray-200);
+    background: var(--color-gray-100);
+}
+
+.pd-header-avatar-fallback {
+    display: inline-grid;
+    place-items: center;
+    background: var(--color-ink-navy);
+    color: #fff;
+    font-weight: 700;
+}
+
+.pd-avatar-edit-button {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--color-ink-navy);
+    color: #fff;
+    font-size: 11px;
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+}
+
+.pd-avatar-edit-button:hover {
+    background: #2d3567;
+}
+
+.pd-brand-logo {
+    display: block;
+    width: 132px;
+    max-height: 42px;
+    object-fit: contain;
+}
+
+.pd-eyebrow {
+    margin: 0 0 4px;
+    color: var(--color-gray-600);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.pd-location,
+.pd-muted,
+.pd-stat-note,
+.pd-availability-empty {
+    color: var(--color-gray-600);
+}
+.pd-location {
+    margin-top: 4px;
+}
+
+
+/* ---------- Cards / panels ---------- */
+.pd-elevated-card {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.pd-panel {
+    padding: 22px;
+    background: #fff;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.pd-stat-label {
+    min-height: 2.8em;
+    color: var(--color-gray-600);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.pd-stat-value {
+    font-size: 28px;
+    line-height: 1.1;
+}
+
+.pd-stat-note {
+    font-size: 12px;
+}
+
+
+
+/* ---- Action buttons (semantic colors) ------ */
+.pd-action {
+    padding: 6px 10px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.pd-action:hover {
+    background: var(--color-gray-100);
+}
+
+.pd-action-accept,
+.pd-action-complete {
+    border-color: #b9dfc6;
+    color: var(--color-success);
+}
+
+.pd-action-decline {
+    border-color: #efcfcd;
+    color: var(--color-danger);
+}
+
+.pd-text-button {
+    padding: 5px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-info);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+}
+
+.pd-text-button:hover {
+    background: var(--color-gray-100);
+}
+
+
+
+/* ---------- Table ---------- */
+.pd-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+    min-width: 690px;
+}
+
+.pd-table th,
+.pd-table td {
+    padding: 13px 12px;
+    border-bottom: 1px solid var(--color-gray-200);
+    vertical-align: middle;
+}
+
+.pd-table th {
+    color: var(--color-gray-600);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pd-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.pd-cell-subtitle {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-gray-600);
+    font-size: 12px;
+}
+
+.pd-status {
+    display: inline-flex;
+    padding: 4px 9px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pd-status-pending {
+    background: #fff4dd;
+    color: var(--color-warning);
+}
+
+.pd-status-confirmed,
+.pd-status-completed {
+    background: #e7f5ec;
+    color: var(--color-success);
+}
+
+.pd-status-cancelled {
+    background: #fcebea;
+    color: var(--color-danger);
+}
+
+.pd-empty-state {
+    padding: 32px 16px;
+    border: 1px dashed var(--color-gray-300);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.pd-empty-state p {
+    margin-top: 4px;
+    color: var(--color-gray-600);
+    font-size: 14px;
+}
+
+.pd-detail-panel {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    background: var(--color-gray-100);
+    font-size: 14px;
+}
+
+.pd-detail-panel p {
+    margin-top: 4px;
+    color: var(--color-gray-600);
+}
+
+
+
+
+
+/* -------- Availability list -------- */
+.pd-availability-empty {
+    font-size: 14px;
+}
+
+.pd-availability-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 13px;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+}
+
+.pd-availability-duration {
+    color: var(--color-gray-600);
+    font-size: 12px;
+}
+
+/* The whole card is a button that opens the edit modal */
+button.pd-availability-item {
+    width: 100%;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+button.pd-availability-item:hover,
+button.pd-availability-item:focus-visible {
+    border-color: var(--color-gray-400);
+    background: var(--color-gray-100);
+}
+
+.pd-availability-count {
+    flex-shrink: 0;
+    font-size: 13px;
+    text-align: right;
+}
+
+/* -------- Slots inside the edit modal -------- */
+.pd-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pd-slot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 7px 9px;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+
+.pd-slot-cancelled time {
+    color: var(--color-gray-400);
+    text-decoration: line-through;
+}
+
+.pd-slot-booked {
+    background: var(--color-gray-100);
+}
+
+
+
+
+/* ---------- Calendar ---------- */
+.pd-calendar-nav {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--color-ink-navy);
+    cursor: pointer;
+    font: inherit;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.pd-calendar-nav:hover,
+.pd-calendar-nav:focus-visible {
+    border-color: var(--color-ink-navy);
+    background: var(--color-gray-100);
+}
+
+.pd-calendar-day-title {
+    color: var(--color-gray-600);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.pd-calendar-slot {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    margin-bottom: 6px;
+    padding: 8px 6px;
+    border: 1px solid var(--color-gray-200);
+    background: #fff;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.pd-calendar-slot time {
+    font-variant-numeric: tabular-nums;
+}
+
+.pd-calendar-slot strong {
+    font-weight: 600;
+}
+
+.pd-calendar-slot span {
+    font-size: 11px;
+    opacity: 0.82;
+}
+
+.pd-calendar-slot-booked {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    color: #fff;
+}
+
+.pd-calendar-slot-open {
+    background: var(--color-gray-100);
+    color: var(--color-gray-600);
+}
+
+.pd-calendar-empty {
+    color: var(--color-gray-400);
+    font-size: 12px;
+}
+
+
+.pd-header-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.pd-avatar-edit-icon {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--color-ink-navy);
+  color: #fff;
+  font-size: 11px;
+  box-shadow: var(--shadow-card);
+}
+
+.pd-profile-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-gray-100);
+}
+
+.pd-tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--color-gray-300);
+  background: #fff;
+}
+
+.pd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-gray-100);
+  color: var(--color-ink-navy);
+  font-size: 13px;
+}
+
+.pd-tag button {
+  border: none;
+  background: transparent;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+
+.pd-tag button:hover {
+  color: var(--color-danger);
+}
+
+.pd-tag-input-field {
+  flex: 1;
+  min-width: 140px;
+  border: none;
+  outline: none;
+  font: inherit;
+  padding: 4px;
+}
+
+
+
+
+/* ---------- Mobile (≤860px): sidebar becomes a top bar with a toggled drawer ---------- */
+@media (max-width: 860px) {
+    .flex.items-stretch.min-h-screen {
+        display: block;
+    }
+
+    .pd-sidebar {
+        position: relative;
+        z-index: 2;
+        flex: initial;
+        height: auto;
+        min-height: auto;
+        padding: 12px 20px;
+        box-shadow: var(--shadow-card);
+        transition: none;
+    }
+  
+    .pd-sidebar-collapsed {
+        padding: 12px 20px;
+    }
+  
+    .pd-desktop-sidebar-toggle {
+        display: none;
+    }
+  
+    .pd-sidebar-welcome {
+        flex: 1;
+        padding: 0 12px 0 0;
+    }
+  
+    .pd-sidebar-welcome p {
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+  
+    .pd-sidebar-welcome strong {
+        font-size: 15px;
+    }
+  
+    .pd-mobile-menu-toggle {
+        display: inline-flex;
+    }
+  
+    .pd-nav-heading {
+        display: none;
+    }
+  
+    .pd-nav {
+        display: none;
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px solid rgb(255 255 255 / 18%);
+    }
+  
+    .pd-sidebar-account {
+        display: none;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+        margin-top: 8px;
+        padding: 10px 0 0;
+    }
+  
+    .pd-sidebar-account .pd-account-avatar {
+        grid-row: auto;
+    }
+  
+    .pd-sidebar-account a {
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+        padding-top: 0;
+    }
+  
+    .pd-sidebar-open .pd-nav,
+    .pd-sidebar-open .pd-sidebar-account {
+        display: grid;
+    }
+
+    .provider-dashboard {
+        width: min(100%, 640px);
+        margin: 0 auto;
+        padding: 24px 14px 36px;
+    }
+  
+    .pd-header {
+        gap: 16px;
+    }
+  
+    .pd-header > div:last-child {
+        justify-self: start;
+    }
+  
+    .pd-brand-logo {
+        width: 110px;
+    }
+  
+}

@@ -1,0 +1,185 @@
+/* ---------- Button ---------- */
+.btn {
+  border: none;
+  padding: 11px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+
+.btn-primary{
+  background: var(--color-ink-navy);
+  color: var(--color-off-white);
+}
+
+
+.btn-accent{
+  background: var(--color-coral);
+  color: var(--color-off-white);
+}
+
+
+.btn-secondary{
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+
+.btn:disabled{
+  background: var(--color-gray-200);
+  color: var(--color-gray-400);
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  min-width: 0; /* overrides the 120px min-width */
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+
+
+
+/* ---------- Input ---------- */
+.field{ margin-bottom: 16px; }
+
+
+.field-label{
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-gray-700);
+}
+
+
+.field-input{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-gray-300);
+  background: #fff;
+  color: var(--color-ink-navy);
+}
+
+
+.field-input::placeholder{
+  color: var(--color-gray-400);
+}
+
+
+.field-input:focus{
+  outline: none;
+  border-color: var(--color-gray-600); }
+
+
+.field-input.has-error{
+  border-color: var(--color-danger);
+}
+
+
+.field-error{ 
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-danger);
+}
+
+
+.field-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-gray-500);
+}
+
+.field-input:disabled {
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+}
+
+
+
+/* ---------- Card ---------- */
+.card{
+  background: var(--color-off-white);
+  border: 1px solid var(--color-gray-200);
+  padding: var(--spacing-lg);
+}
+
+
+
+
+/* ---------- Header ---------- */
+.header-subtitle{
+  color: var(--color-gray-600);
+}
+
+
+
+
+
+
+/* ---------- TimeSlot ---------- */
+.time-slot{
+  width: 100%;
+  padding: 8px 6px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--color-ink-navy);
+  border: 1px solid var(--color-gray-200);
+  cursor: pointer;
+}
+
+
+.time-slot-selected{
+  border: 2px solid var(--color-coral);
+  font-weight: 600;
+}
+
+
+.time-slot-booked{
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #fff;
+  cursor: default;
+}
+
+
+
+/* ---------- Modal ---------- */
+.modal-open {
+  overflow: hidden;   /* locks page scroll behind the modal */
+}
+
+.modal-card {
+  padding: 28px 24px;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-ink-navy);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+.modal-close:hover {
+  background: var(--color-gray-100);
+}

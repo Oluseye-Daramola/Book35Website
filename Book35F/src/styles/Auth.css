@@ -1,0 +1,28 @@
+.auth-page {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;  
+  justify-content: center; 
+  padding: 16px;
+}
+
+.auth-card-wrap {
+  width: 100%;
+  max-width: 380px;
+}
+
+.auth-header{
+  margin-bottom: 18%;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.auth-btn {
+  margin-top: 10%;
+  text-align: center;
+}
+
+
