@@ -77,32 +77,6 @@ export const LandingPage=()=>{
         
       </div>
       
-
-      <div id="services" className="flex flex-col items-center py-16 px-6">
-        
-        <h2>
-          Services
-        </h2>
-        
-        <p className="text-caption">
-          Placeholder section — content TBD.
-        </p>
-        
-      </div>
-      
-
-      <div id="contact" className="flex flex-col items-center py-16 px-6">
-        
-        <h2>
-          Contact
-        </h2>
-        
-        <p className="text-caption">
-          Placeholder section — content TBD.
-        </p>
-        
-      </div>
-      
       
     </div>
     
