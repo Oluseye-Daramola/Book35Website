@@ -110,11 +110,11 @@ const BookingPageContent = ({ slug }) => {
             </section>
 
             <section className="w-full max-w-[560px] mt-12">
-              <h2 className="booking-slots-title">Select your Appointment Time</h2>
+              <h2 className="booking-slots-title">Select a Time to Book your Appointment:</h2>
 
               {slots.length === 0 ? (
                 <p className="booking-status" style={{ marginTop: 24 }}>
-                  No available times in the next 14 days.
+                  Appointment time slot is currently not available. Check later
                 </p>
               ) : (
                 <div className="booking-slots grid grid-cols-2 gap-3.5 mt-4 max-[360px]:grid-cols-1">

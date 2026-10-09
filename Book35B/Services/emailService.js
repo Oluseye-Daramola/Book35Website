@@ -1,30 +1,60 @@
-const { Resend } = require('resend');
+// Email service using Brevo's HTTP API.
+// Uses fetch (built into Node 18+), so no extra package is needed.
+// Sends over HTTPS, which works on Render's free tier (SMTP ports are blocked there).
+//
+// Required environment variables:
+//   BREVO_API_KEY   - from Brevo: SMTP & API -> API Keys
+//   SENDER_EMAIL    - a sender you verified in Brevo (e.g. app@gmail.com)
+// Optional:
+//   SENDER_NAME     - display name shown to recipients (default: Appointment Booking)
+//   APP_TIMEZONE    - timezone for formatting dates in emails (default: Africa/Lagos)
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 // Generic low-level email sender.
 // Everything else builds on this function.
 async function sendEmail({ to, subject, html, text }) {
+  if (!process.env.BREVO_API_KEY || !process.env.SENDER_EMAIL) {
+    console.error('Email sending failed: BREVO_API_KEY or SENDER_EMAIL is not set');
+    throw new Error('Failed to send email');
+  }
+
+  // Brevo expects recipients as [{ email }]. Accept a string or an array of strings.
+  const recipients = (Array.isArray(to) ? to : [to]).map((email) => ({ email }));
+
   try {
-    const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Appointment Booking <onboarding@resend.dev>',
-      to,
-      subject,
-      html,
-      text,
+    const response = await fetch(BREVO_API_URL, {
+      method: 'POST',
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        sender: {
+          name: process.env.SENDER_NAME || 'Appointment Booking',
+          email: process.env.SENDER_EMAIL,
+        },
+        to: recipients,
+        subject,
+        htmlContent: html,
+        textContent: text,
+      }),
     });
 
-    if (error) {
-      console.error('Email sending failed:', error);
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      console.error('Email sending failed:', response.status, data);
       throw new Error('Failed to send email');
     }
 
     return {
       success: true,
-      messageId: data.id,
+      messageId: data.messageId,
     };
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error('Email sending failed:', error.message);
     throw new Error('Failed to send email');
   }
 }
@@ -37,6 +67,15 @@ const escapeHtml = (value = '') =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+
+// Formats dates in a fixed timezone. Render servers run in UTC,
+// so without this, emails would show UTC times instead of local times.
+const formatTime = (startTime) =>
+  new Date(startTime).toLocaleString('en-GB', {
+    timeZone: process.env.APP_TIMEZONE || 'Africa/Lagos',
+    dateStyle: 'full',
+    timeStyle: 'short',
+  });
 
 // Sends a welcome email to a provider after they create their account.
 async function sendWelcomeEmail({ toEmail, name, businessName }) {
@@ -90,7 +129,9 @@ async function sendBookingConfirmation({
   providerName,
   startTime,
 }) {
-  const formattedTime = new Date(startTime).toLocaleString();
+  const formattedTime = formatTime(startTime);
+  const safeCustomerName = escapeHtml(customerName);
+  const safeProviderName = escapeHtml(providerName);
 
   return sendEmail({
     to: toEmail,
@@ -104,11 +145,11 @@ If you need to reschedule or cancel, please log in to your account.`,
       <div style="font-family: Arial, sans-serif;">
         <h2>Appointment Confirmed</h2>
 
-        <p>Hi ${customerName},</p>
+        <p>Hi ${safeCustomerName},</p>
 
         <p>
           Your appointment with
-          <strong>${providerName}</strong>
+          <strong>${safeProviderName}</strong>
           is confirmed for
           <strong>${formattedTime}</strong>.
         </p>
@@ -128,7 +169,8 @@ async function sendCancellationNotice({
   customerName,
   startTime,
 }) {
-  const formattedTime = new Date(startTime).toLocaleString();
+  const formattedTime = formatTime(startTime);
+  const safeCustomerName = escapeHtml(customerName);
 
   return sendEmail({
     to: toEmail,
@@ -140,7 +182,7 @@ Your appointment scheduled for ${formattedTime} has been cancelled.`,
       <div style="font-family: Arial, sans-serif;">
         <h2>Appointment Cancelled</h2>
 
-        <p>Hi ${customerName},</p>
+        <p>Hi ${safeCustomerName},</p>
 
         <p>
           Your appointment scheduled for
@@ -160,7 +202,9 @@ async function sendReminder({
   providerName,
   startTime,
 }) {
-  const formattedTime = new Date(startTime).toLocaleString();
+  const formattedTime = formatTime(startTime);
+  const safeCustomerName = escapeHtml(customerName);
+  const safeProviderName = escapeHtml(providerName);
 
   return sendEmail({
     to: toEmail,
@@ -172,11 +216,11 @@ This is a reminder of your upcoming appointment with ${providerName} on ${format
       <div style="font-family: Arial, sans-serif;">
         <h2>Appointment Reminder</h2>
 
-        <p>Hi ${customerName},</p>
+        <p>Hi ${safeCustomerName},</p>
 
         <p>
           This is a reminder of your upcoming appointment with
-          <strong>${providerName}</strong>
+          <strong>${safeProviderName}</strong>
           on
           <strong>${formattedTime}</strong>.
         </p>
