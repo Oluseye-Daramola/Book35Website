@@ -59,7 +59,7 @@ export const Login = () => {
 
         <Card style={{ maxWidth: 380, width: '100%' }}>
         
-          <h1>Welcome back</h1>
+          <h1 className="auth-header">Welcome back</h1>
           
           <form onSubmit={handleSubmit} className="inBtn">
             
