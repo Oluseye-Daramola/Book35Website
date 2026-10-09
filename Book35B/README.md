@@ -1,1026 +1,534 @@
-# Appointment Booking API
+# Book35 — Backend API
 
-A production-shaped backend for an appointment booking platform, built with **Node.js**,
-**Express**, and **MongoDB (Mongoose)**. Providers publish their services and weekly
-availability; customers book conflict-free appointments.
+The REST API behind **Book35**, an appointment booking platform for small businesses
+(salons, barbers, consultants, clinics, and so on).
+
+- **Providers** (business owners) sign up, set up their profile, and publish the times they are available.
+- **Customers** don't need an account. They open a provider's public booking page, pick a free time slot, and book it.
+- The provider then **confirms**, **cancels**, or **completes** each booking, and the customer is notified by email.
+
+Built with **Node.js**, **Express 5**, and **MongoDB (Mongoose)**.
+The frontend lives in [`../Book35F`](../Book35F/README.md).
+
+---
+
+## Contents
+
+- [How it works](#how-it-works)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Environment variables](#environment-variables)
+- [Project structure](#project-structure)
+- [Data models](#data-models)
+- [API reference](#api-reference)
+- [Emails](#emails)
+- [Security](#security)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Known limitations and next steps](#known-limitations-and-next-steps)
+
+---
+
+## How it works
+
+```text
+ PROVIDER (logged in)                          CUSTOMER (no account)
+ ────────────────────                          ─────────────────────
+ 1. Register / log in  ──► gets a JWT
+ 2. Edit profile (services, slogan, photo)
+ 3. Create availability windows
+    e.g. 10 Oct, 09:00–12:00, 30-min slots
+                                               4. Opens /book/<provider-slug>
+                                               5. Sees the free slots
+                                               6. Books one  ──► status: pending
+ 7. Confirms it  ──► status: confirmed  ──────► confirmation email
+    (or cancels  ──► status: cancelled  ──────► cancellation email)
+ 8. After the appointment: complete it ──► status: completed
+```
+
+**Appointment statuses**
+
+```text
+pending ──► confirmed ──► completed
+   │            │
+   └────────────┴──► cancelled
+```
+
+- Only a `pending` appointment can be confirmed.
+- Only a `confirmed` appointment can be completed, and only once its start time has passed.
+- Any appointment that isn't already `completed` or `cancelled` can be cancelled.
+
+**How double-booking is prevented**
+
+When a customer books, the server checks that the requested time:
+
+1. falls inside one of the provider's availability windows,
+2. lines up exactly with one of that window's slots (e.g. 09:00, 09:30, 10:00 for 30-minute slots),
+3. hasn't been blocked by the provider, and
+4. doesn't overlap another `pending` or `confirmed` appointment.
+
+If the slot was taken a moment earlier, the API responds with `409 Conflict`.
+
+---
 
 ## Tech stack
 
-| Layer      | Choice                                                        |
-| ---------- | ------------------------------------------------------------- |
-| Runtime    | Node.js 18+                                                   |
-| Framework  | Express 4                                                     |
-| Database   | MongoDB via Mongoose                                          |
-| Auth       | JSON Web Tokens (`jsonwebtoken`), `bcryptjs`                  |
-| Validation | Joi                                                           |
-| Security   | Helmet, express-rate-limit, express-mongo-sanitize, hpp, CORS |
-| Logging    | Winston + Morgan                                              |
-| Testing    | Jest, Supertest                                               |
-
-
-
-
-Appointment Booking App - Backend
-
-This is the backend part of a full-stack Appointment Booking Application.
-
-The backend is responsible for handling the application's data, business logic, authentication, and communication with the database.
-
-It provides APIs that the frontend can use to register users, log users in, manage services, check availability, and create and manage appointments.
-
-
-
-What Does This Backend Do?
-
-The backend acts as the middleman between the frontend and the database.
-
-For example:
-
-```text
-Frontend
-   |
-   | Request
-   v
-Backend
-   |
-   | Request
-   v
-Database
-   |
-   | Data
-   v
-Backend
-   |
-   | Response
-   v
-Frontend
-```
-
-For example, when a user wants to book an appointment:
-
-```text
-User
-  |
-  v
-Frontend
-  |
-  | "I want to book 10:00 AM"
-  v
-Backend
-  |
-  | Check availability
-  v
-Database
-  |
-  | 10:00 AM is available
-  v
-Backend
-  |
-  | Save appointment
-  v
-Database
-  |
-  v
-Backend
-  |
-  | Booking successful
-  v
-Frontend
-```
-
-
-
-Features
-
-The backend provides the following features:
-
-* User registration
-* User login
-* User authentication
-* User profile management
-* Service management
-* Appointment booking
-* Appointment management
-* Appointment cancellation
-* Appointment rescheduling
-* Availability management
-* Admin management
-* Data validation
-* Error handling
-
-
-
-Technologies Used
-
-This backend is built with:
-
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JavaScript
-* JSON Web Token (JWT)
-* bcrypt
-* dotenv
-
-
-
-PROJECT STRUCTURE
-
-The backend is organized into different folders.
-
-```text
-backend/
-│
-├── config/
-│   └── db.js
-│
-├── controllers/
-│   ├── authController.js
-│   ├── userController.js
-│   ├── serviceController.js
-│   ├── appointmentController.js
-│   └── availabilityController.js
-│
-├── middleware/
-│   ├── authMiddleware.js
-│   └── errorMiddleware.js
-│
-├── models/
-│   ├── User.js
-│   ├── Service.js
-│   ├── Appointment.js
-│   └── Availability.js
-│
-├── routes/
-│   ├── authRoutes.js
-│   ├── userRoutes.js
-│   ├── serviceRoutes.js
-│   ├── appointmentRoutes.js
-│   └── availabilityRoutes.js
-│
-├── services/
-│   └── appointmentService.js
-│
-├── utils/
-│   └── generateToken.js
-│
-├── .env
-├── .gitignore
-├── app.js
-├── server.js
-├── package.json
-└── README.md
-```
-
-
-
-Understanding the Folders
-
-
-1. config
-
-The `config` folder contains configuration files.
-
-For example:
-
-```text
-config/
-└── db.js
-```
-
-`db.js` is responsible for connecting the backend to MongoDB.
-
-
-2. controllers
-
-The `controllers` folder contains the main logic for the application's requests.
-
-For example:
-
-```text
-controllers/
-└── appointmentController.js
-```
-
-The appointment controller can contain functions for:
-
-* Creating an appointment
-* Getting appointments
-* Updating appointments
-* Cancelling appointments
-
-Controllers answer the question:
-
-> "What should the application do when this request arrives?"
-
-
-
-3. middleware
-
-Middleware contains functions that run between the request and the final response.
-
-For example:
-
-```text
-middleware/
-└── authMiddleware.js
-```
-
-The authentication middleware can check:
-
-> "Is this user logged in?"
-
-If the user is authenticated, the request can continue.
-
-If not, the backend can reject the request.
-
-
-
-4. models
-
-The `models` folder describes the structure of the data stored in the database.
-
-Example:
-
-```text
-models/
-├── User.js
-├── Service.js
-├── Appointment.js
-└── Availability.js
-```
-
-
-User
-
-Stores information about users.
-
-Example:
-
-```text
-Name
-Email
-Password
-Role
-```
-
-
-Service
-
-Stores information about services.
-
-Example:
-
-```text
-Service Name
-Description
-Price
-Duration
-```
-
-
-Appointment
-
-Stores information about bookings.
-
-Example:
-
-```text
-User
-Service
-Date
-Time
-Status
-```
-
-
-Availability
-
-Stores available dates and times.
-
-Example:
-
-```text
-Date
-Start Time
-End Time
-```
-
-
-
-5. Routes
-
-Routes determine the URLs that the frontend can communicate with.
-
-Example:
-
-```text
-routes/
-├── authRoutes.js
-├── userRoutes.js
-├── serviceRoutes.js
-├── appointmentRoutes.js
-└── availabilityRoutes.js
-```
-
-For example:
-
-```text
-POST /api/auth/register
-```
-
-means:
-
-> "Create a new user."
-
-And:
-
-```text
-POST /api/appointments
-```
-
-means:
-
-> "Create a new appointment."
-
-
-
-6. Services
-
-The `services` folder contains reusable business logic.
-
-For example:
-
-```text
-services/
-└── appointmentService.js
-```
-
-This can contain more complicated appointment-related operations.
-
-For example:
-
-```text
-Check if time is available
-        ↓
-Check if appointment already exists
-        ↓
-Create appointment
-        ↓
-Return appointment
-```
-
-
-
-7. Utils
-
-The `utils` folder contains small helper functions that can be reused throughout the application.
-
-For example:
-
-```text
-utils/
-└── generateToken.js
-```
-
-This file can contain a function that generates a JWT token for authenticated users.
-
-
-
-8. app.js
-
-`app.js` is responsible for setting up the Express application.
-
-It can contain:
-
-* Express configuration
-* Middleware
-* Routes
-* Error handling
-
-Example:
-
-```text
-Express App
-    |
-    ├── Middleware
-    |
-    ├── Routes
-    |
-    └── Error Handling
-```
-
-
-
-9. server.js
-
-`server.js` starts the backend server.
-
-For example:
-
-```text
-server.js
-   |
-   v
-Connect to Database
-   |
-   v
-Start Express Server
-   |
-   v
-Listen on Port
-```
-
-The server might run on:
-
-```text
-http://localhost:5000
-```
-
-
-
-API Endpoints
-
-The backend provides different API endpoints.
-
-
-Authentication
-
-
-Register
-
-```text
-POST /api/auth/register
-```
-
-Creates a new user.
-
-Example request:
-
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-
-
-
-Login
-
-```text
-POST /api/auth/login
-```
-
-Logs a user into the application.
-
-Example:
-
-```json
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-
-
-
-Get Current User
-
-```text
-GET /api/auth/me
-```
-
-Returns information about the currently logged-in user.
-
-
-
-User Endpoints
-
-
-Get All Users
-
-```text
-GET /api/users
-```
-
-Returns all users.
-
-
-
-Get One User
-
-```text
-GET /api/users/:id
-```
-
-Returns one user using their ID.
-
-
-
-Update User
-
-```text
-PUT /api/users/:id
-```
-
-Updates a user's information.
-
-
-
-Delete User
-
-```text
-DELETE /api/users/:id
-```
-
-Deletes a user.
-
-
-
-Service Endpoints
-
-
-Get All Services
-
-```text
-GET /api/services
-```
-
-Returns all available services.
-
-
-
-Get One Service
-
-```text
-GET /api/services/:id
-```
-
-Returns information about one service.
-
-
-
-Create Service
-
-```text
-POST /api/services
-```
-
-Creates a new service.
-
-Example:
-
-```json
-{
-  "name": "Medical Consultation",
-  "description": "General medical consultation",
-  "price": 5000,
-  "duration": 30
-}
-```
-
-
-
-Delete Service
-
-```text
-PUT /api/services/:id
-```
-
-Updates an existing service.
-
-
-
-Delete Service
-
-```text
-DELETE /api/services/:id
-```
-
-Deletes a service.
-
-
-
-Appointment Endpoints
-
-
-Create Appointment
-
-```text
-POST /api/appointments
-```
-
-Creates a new appointment.
-
-Example:
-
-```json
-{
-  "serviceId": "12345",
-  "date": "2026-10-15",
-  "time": "10:00"
-}
-```
-
-
-
-Get Appointments
-
-```text
-GET /api/appointments
-```
-
-Returns appointments.
-
-
-
-Get One Appointment
-
-```text
-GET /api/appointments/:id
-```
-
-Returns a specific appointment.
-
-
-
-Update Appointment
-
-```text
-PUT /api/appointments/:id
-```
-
-Updates an appointment.
-
-
-
-Cancel Appointment
-
-```text
-DELETE /api/appointments/:id
-```
-
-Cancels an appointment.
-
-
-
-Availability Endpoints
-
-
-Get Available Times
-
-```text
-GET /api/availability
-```
-
-Returns available appointment dates and times.
-
-
-
-Create Availability
-
-```text
-POST /api/availability
-```
-
-Creates an available date and time.
-
-Example:
-
-```json
-{
-  "date": "2026-10-15",
-  "startTime": "09:00",
-  "endTime": "17:00"
-}
-```
-
-
-
-Update Availability
-
-```text
-PUT /api/availability/:id
-```
-
-Updates an availability record.
-
-
-
-Delete Availability
-
-```text
-DELETE /api/availability/:id
-```
-
-Removes an available time.
-
-
-
-Database
-
-This application uses MongoDB as its database.
-
-The database stores:
-
-```text
-Users
-Services
-Appointments
-Availability
-```
-
-The backend communicates with MongoDB through Mongoose.
-
-The basic connection looks like:
-
-```text
-Backend
-   |
-   v
-Mongoose
-   |
-   v
-MongoDB
-```
-
-
-
-Authentication
-
-Authentication allows the backend to know who is using the application.
-
-The authentication process is:
-
-```text
-User Registers
-      |
-      v
-Password Is Hashed
-      |
-      v
-User Is Saved
-      |
-      v
-User Logs In
-      |
-      v
-Credentials Are Checked
-      |
-      v
-JWT Token Is Created
-      |
-      v
-Token Is Sent To Frontend
-```
-
-Protected routes can then use the token to identify the user.
-
-
-
-Environment Variables
-
-Create a `.env` file inside the backend folder.
-
-Example:
-
-```env
-PORT=5000
-
-MONGODB_URI=your_mongodb_connection_string
-
-JWT_SECRET=your_secret_key
-```
-
-The `.env` file contains private information.
-
-Do not upload it to GitHub.
-
-Add this to `.gitignore`:
-
-```text
-.env
-node_modules
-```
-
-
-
-Installation
-
-
-Step 1: Clone the Project
+| Area       | Choice                                                               |
+| ---------- | -------------------------------------------------------------------- |
+| Runtime    | Node.js 18+ (uses the built-in `fetch`)                              |
+| Framework  | Express 5                                                            |
+| Database   | MongoDB with Mongoose                                                |
+| Auth       | JSON Web Tokens (`jsonwebtoken`), passwords hashed with `bcryptjs`   |
+| Validation | Joi schemas + simple custom validators                               |
+| Security   | Helmet, CORS, hpp, express-rate-limit                                |
+| Email      | [Brevo](https://www.brevo.com/) HTTP API                             |
+| Logging    | Morgan (HTTP requests) + a small console logger (`Config/logger.js`) |
+
+---
+
+## Getting started
+
+**Requirements:** Node.js 18 or newer, a MongoDB database (e.g. a free MongoDB Atlas cluster), and a Brevo account if you want emails to send.
 
 ```bash
-git clone https://github.com/yourusername/appointment-booking-app.git
-```
+# 1. Clone the repository
+git clone https://github.com/Oluseye-Daramola/Book35Website.git
+cd Book35Website/Book35B
 
-
-Step 2: Enter the Backend Folder
-
-```bash
-cd appointment-booking-app/backend
-```
-
-
-Step 3: Install Dependencies
-
-```bash
+# 2. Install dependencies
 npm install
+
+# 3. Create a .env file (see "Environment variables" below)
+
+# 4. Start the server
+npm run dev     # development, restarts on file changes (nodemon)
+npm start       # production
 ```
 
-
-Step 4: Create the Environment File
-
-Create:
+When it's running you'll see:
 
 ```text
-.env
+MongoDB connected: <your-cluster-host>
+Server running on http://localhost:5000
 ```
 
-Then add:
+Check it's up by opening <http://localhost:5000/api/health>.
+
+> **Running with the frontend locally?** CORS currently only allows the production frontend
+> (`https://book35website-1.onrender.com`). To use the frontend on `http://localhost:5173`, temporarily
+> change the `origin` in [`app.js`](app.js) to `http://localhost:5173`, and don't commit that change.
+
+---
+
+## Environment variables
+
+Create a file called `.env` in the `Book35B` folder. It is already in `.gitignore`, so **never commit it**.
 
 ```env
+# Required
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>/<database>
+JWT_SECRET=a-long-random-secret-string
+
+# Optional
 PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
+JWT_EXPIRES_IN=7d
+
+# Emails (required for emails to send)
+BREVO_API_KEY=xkeysib-...
+SENDER_EMAIL=your-verified-sender@example.com
+SENDER_NAME=Book35
+APP_TIMEZONE=Africa/Lagos
 ```
 
+| Variable         | Required?  | Default               | What it's for                                                                                                 |
+| ---------------- | ---------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `MONGO_URI`      | **Yes**    | –                     | MongoDB connection string. The server won't start without it.                                                 |
+| `JWT_SECRET`     | **Yes**    | –                     | Secret used to sign login tokens. The server won't start without it.                                          |
+| `PORT`           | No         | `5000`                | Port the server listens on. Render sets this automatically.                                                   |
+| `JWT_EXPIRES_IN` | No         | `7d`                  | How long a login lasts (e.g. `1h`, `7d`).                                                                     |
+| `BREVO_API_KEY`  | For emails | –                     | Brevo → _SMTP & API_ → _API Keys_.                                                                            |
+| `SENDER_EMAIL`   | For emails | –                     | The "from" address. It must be a **verified sender** in Brevo.                                                |
+| `SENDER_NAME`    | No         | `Appointment Booking` | Name shown as the email sender.                                                                               |
+| `APP_TIMEZONE`   | No         | `Africa/Lagos`        | Timezone used to show appointment times in emails.                                                            |
+| `CLIENT_URL`     | No         | –                     | Frontend URL. Read in `Config/env.js` but not used yet (see [next steps](#known-limitations-and-next-steps)). |
 
+---
 
-Running the Backend
-
-To start the backend in development mode:
-
-```bash
-npm run dev
-```
-
-Or, if the project does not have a development script:
-
-```bash
-node server.js
-```
-
-The server should then run on:
+## Project structure
 
 ```text
-http://localhost:5000
+Book35B/
+├── Config/
+│   ├── db.js                 # Connects to MongoDB
+│   ├── env.js                # Loads .env and checks required variables
+│   └── logger.js             # Small timestamped console logger
+├── Controllers/              # What happens when a request arrives
+│   ├── authController.js         # register, login
+│   ├── providerController.js     # view / edit own profile
+│   ├── serviceController.js      # priced services (CRUD)
+│   ├── availabilityController.js # availability windows and slots
+│   ├── appointmentController.js  # provider's appointments: confirm / cancel / complete
+│   └── publicController.js       # public booking page + customer booking
+├── Middleware/
+│   ├── auth.js               # Checks the "Authorization: Bearer <token>" header
+│   ├── errorHandler.js       # Turns errors into consistent JSON responses
+│   ├── rateLimiter.js        # Request limits per IP
+│   └── validate.js           # Runs Joi schemas against the request body
+├── Models/                   # Mongoose schemas (database shape)
+│   ├── Provider.js
+│   ├── Service.js
+│   ├── Availability.js
+│   └── Appointment.js
+├── Routes/                   # URL → middleware → controller
+│   ├── authRoutes.js         # /api/auth
+│   ├── providerRoutes.js     # /api/providers
+│   ├── serviceRoutes.js      # /api/services
+│   ├── availabilityRoutes.js # /api/availability
+│   ├── appointmentRoutes.js  # /api/appointments
+│   └── publicRoutes.js       # /api/public
+├── Services/                 # Reusable business logic
+│   ├── appointmentService.js
+│   ├── authService.js
+│   ├── availabilityService.js
+│   └── emailService.js       # Sends emails through Brevo
+├── Utils/
+│   ├── apiError.js           # Error class with an HTTP status code
+│   ├── generateSlots.js      # Splits availability windows into bookable slots
+│   ├── generateToken.js      # Creates JWTs
+│   └── timeUtils.js          # Date helpers
+├── Validations/              # Request validation rules, one file per resource
+├── Tests/                    # testEmail.js + placeholders for future tests
+├── app.js                    # Builds the Express app: middleware, routes, error handling
+├── server.js                 # Entry point: loads env, connects to MongoDB, starts the server
+└── package.json
 ```
 
-
-
-Testing the API
-
-You can test the backend using:
-
-* Postman
-* Thunder Client
-* Insomnia
-
-For example, you can test:
+**How a request flows through the code**
 
 ```text
-POST /api/auth/register
-POST /api/auth/login
-GET /api/services
-POST /api/appointments
-GET /api/appointments
+Request ─► app.js (helmet, cors, json, hpp, morgan)
+        ─► Routes/   (which URL?)
+        ─► Middleware/ (rate limit → auth → validation)
+        ─► Controllers/ (do the work, using Models/ and Services/)
+        ─► JSON response
+        (any error ─► Middleware/errorHandler.js)
 ```
 
+---
 
+## Data models
 
-Appointment Booking Logic
+### Provider
 
-Before creating an appointment, the backend should check whether the selected time is available.
+A business owner who uses the dashboard.
 
-The process should be:
+| Field                                | Notes                                                                                                                  |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `name`, `businessName`               | Required                                                                                                               |
+| `email`                              | Required, unique, used to log in                                                                                       |
+| `password`                           | Hashed with bcrypt and never returned in responses                                                                     |
+| `slug`                               | Unique, generated from `businessName` (e.g. `glow-salon`, or `glow-salon-2` if taken). Used in the public booking URL. |
+| `phone`, `location`, `slogan`, `bio` | Optional profile details                                                                                               |
+| `services`                           | List of service names offered, e.g. `["Haircut", "Braids"]`. Customers pick one of these when booking.                 |
+| `avatar`                             | Profile photo as a base64 data URL (max ~1 MB image)                                                                   |
+| `isActive`                           | Deactivated providers can't log in and don't appear publicly                                                           |
 
-```text
-User Selects Date
-       |
-       v
-User Selects Time
-       |
-       v
-Backend Receives Request
-       |
-       v
-Check Availability
-       |
-       v
-Is Time Available?
-       |
-   +---+---+
-   |       |
-  YES      NO
-   |       |
-   v       v
-Create    Reject
-Booking   Booking
-   |
-   v
-Save Appointment
+### Availability
+
+A **one-off block of time on a specific date** (not a weekly repeating schedule).
+
+| Field                  | Notes                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| `startTime`, `endTime` | Full date-times, e.g. `2026-10-10T09:00` to `2026-10-10T12:00`. Windows can't overlap each other. |
+| `slotDuration`         | Minutes per appointment: `10`, `15`, `20`, `30`, `45` or `60` (default `30`)                      |
+| `blockedSlots`         | Start times of individual slots the provider has switched off                                     |
+
+### Appointment
+
+A customer's booking.
+
+| Field                                            | Notes                                                           |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| `provider`                                       | The provider being booked                                       |
+| `serviceName`                                    | Optional, one of the provider's `services`                      |
+| `customerName`, `customerEmail`, `customerPhone` | Customer details (phone optional)                               |
+| `startTime`, `endTime`                           | `endTime` is set by the server from the window's `slotDuration` |
+| `status`                                         | `pending` · `confirmed` · `cancelled` · `completed`             |
+| `notes`, `completedAt`                           | Optional                                                        |
+
+### Service
+
+A priced service with a duration (`name`, `description`, `durationMinutes`, `priceMinorUnits`, `currency`, `isActive`).
+Prices are stored in the smallest currency unit (e.g. kobo or cents), so `500000` = ₦5,000.00.
+
+> The current frontend uses the simpler `services` list on the Provider instead. The `/api/services`
+> endpoints are ready for when priced services are added to the UI.
+
+---
+
+## API reference
+
+**Base URL:** `http://localhost:5000/api` locally, or your Render backend URL + `/api` in production.
+
+**Authentication:** routes marked 🔒 need the token from register/login in this header:
+
+```http
+Authorization: Bearer <token>
 ```
 
-This prevents two users from booking the same time slot.
+**Response format**
 
+```jsonc
+// Success
+{ "success": true, "data": { ... } }
 
+// Error
+{ "success": false, "message": "Validation failed", "errors": ["A valid email is required"] }
+```
 
-Error Handling
+| Status | Meaning                                                             |
+| ------ | ------------------------------------------------------------------- |
+| `400`  | Invalid input                                                       |
+| `401`  | Missing/invalid token, or wrong email or password                   |
+| `403`  | Not your resource, or account deactivated                           |
+| `404`  | Not found                                                           |
+| `409`  | Conflict (slot already booked, overlapping window, duplicate email) |
+| `429`  | Too many requests (rate limit)                                      |
+| `500`  | Server error                                                        |
 
-The backend should return clear error messages when something goes wrong.
+### Overview
 
-Examples:
+| Method | Endpoint                           | Auth | Description                                   |
+| ------ | ---------------------------------- | ---- | --------------------------------------------- |
+| GET    | `/health`                          | –    | Check the API is running                      |
+| POST   | `/auth/register`                   | –    | Create a provider account                     |
+| POST   | `/auth/login`                      | –    | Log in and get a token                        |
+| GET    | `/providers/me`                    | 🔒   | Get your profile                              |
+| PUT    | `/providers/me`                    | 🔒   | Update your profile                           |
+| GET    | `/availability`                    | 🔒   | List your windows (with their slots)          |
+| POST   | `/availability`                    | 🔒   | Create a window                               |
+| PUT    | `/availability/:id`                | 🔒   | Change a window                               |
+| DELETE | `/availability/:id`                | 🔒   | Delete a window                               |
+| GET    | `/availability/:id/slots`          | 🔒   | Every slot in a window and its status         |
+| PATCH  | `/availability/:id/slots`          | 🔒   | Block or unblock one slot                     |
+| GET    | `/appointments`                    | 🔒   | List your appointments (soonest first)        |
+| GET    | `/appointments/:id`                | 🔒   | Get one appointment                           |
+| PATCH  | `/appointments/:id/confirm`        | 🔒   | `pending` → `confirmed` (emails the customer) |
+| PATCH  | `/appointments/:id/cancel`         | 🔒   | → `cancelled` (emails the customer)           |
+| PATCH  | `/appointments/:id/complete`       | 🔒   | `confirmed` → `completed`                     |
+| GET    | `/services`                        | 🔒   | List your priced services                     |
+| POST   | `/services`                        | 🔒   | Create a service                              |
+| PUT    | `/services/:id`                    | 🔒   | Update a service                              |
+| DELETE | `/services/:id`                    | 🔒   | Delete a service                              |
+| GET    | `/public/providers/:slug`          | –    | Public provider profile                       |
+| GET    | `/public/providers/:slug/services` | –    | A provider's active priced services           |
+| GET    | `/public/providers/:slug/slots`    | –    | Free slots to book                            |
+| POST   | `/public/appointments`             | –    | Book an appointment (customer)                |
+
+### Examples
+
+#### Register — `POST /api/auth/register`
 
 ```json
 {
-  "message": "User not found"
+  "name": "Ada Obi",
+  "businessName": "Glow Salon",
+  "email": "ada@example.com",
+  "password": "password123",
+  "phone": "+2348012345678",
+  "bio": "Hair and beauty in Lekki"
 }
 ```
 
-or:
+`name`, `businessName`, `email` and `password` (minimum 8 characters) are required. Returns `201`:
 
 ```json
 {
-  "message": "This appointment time is already booked"
+  "success": true,
+  "data": {
+    "provider": {
+      "id": "…",
+      "name": "Ada Obi",
+      "businessName": "Glow Salon",
+      "slug": "glow-salon",
+      "email": "ada@example.com"
+    },
+    "token": "eyJhbGciOi…"
+  }
 }
 ```
 
-or:
+A welcome email is sent in the background. If it fails, sign-up still succeeds.
+
+#### Log in — `POST /api/auth/login`
+
+```json
+{ "email": "ada@example.com", "password": "password123" }
+```
+
+Returns the same shape as register.
+
+#### Update profile — `PUT /api/providers/me` 🔒
+
+Send only the fields you want to change:
 
 ```json
 {
-  "message": "Unauthorized"
+  "location": "Lekki, Lagos",
+  "services": ["Haircut", "Braids", "Manicure"],
+  "slogan": "Look good, feel good",
+  "avatar": "data:image/jpeg;base64,…"
 }
 ```
 
+Updatable fields: `name`, `businessName`, `location`, `services`, `slogan`, `avatar`, `bio`, `phone`.
 
+#### Create availability — `POST /api/availability` 🔒
 
-Security
+```json
+{
+  "startTime": "2026-10-10T09:00:00+01:00",
+  "endTime": "2026-10-10T12:00:00+01:00",
+  "slotDuration": 30
+}
+```
 
-The backend should protect user information and application data.
+This creates six 30-minute slots: 09:00, 09:30 … 11:30. Returns `409` if it overlaps one of your existing windows.
 
-Important security practices include:
+#### Block or unblock a slot — `PATCH /api/availability/:id/slots` 🔒
 
-* Hash passwords using bcrypt.
-* Use JWT for authentication.
-* Protect private routes.
-* Validate user input.
-* Protect admin-only routes.
-* Store secrets in `.env`.
-* Never store plain-text passwords.
-* Never upload `.env` to GitHub.
-* Prevent duplicate appointment bookings.
+```json
+{ "startTime": "2026-10-10T10:00:00+01:00", "cancelled": true }
+```
 
----
+Use `"cancelled": false` to make the slot bookable again. You can't block a slot a customer has already booked (`409`). Cancel the booking first.
 
+#### Get free slots — `GET /api/public/providers/:slug/slots`
 
-Future Improvements
+Optional query parameters `from` and `to` (ISO dates). Defaults to the next 14 days, maximum range 31 days.
 
-The backend can later be improved by adding:
+```http
+GET /api/public/providers/glow-salon/slots?from=2026-10-10T00:00:00Z&to=2026-10-17T00:00:00Z
+```
 
-* Email notifications
-* SMS notifications
-* Appointment reminders
-* Online payment
-* Google Calendar integration
-* Multiple service providers
-* Multiple locations
-* Reviews and ratings
-* Admin analytics
-* Recurring appointments
-* Video consultations
+Only future slots that aren't booked or blocked are returned.
 
----
+#### Book an appointment — `POST /api/public/appointments`
 
+```json
+{
+  "provider": "665f1c2e9b1e8a3d4c5b6a71",
+  "serviceName": "Haircut",
+  "customerName": "Tolu Bello",
+  "customerEmail": "tolu@example.com",
+  "customerPhone": "+2348098765432",
+  "startTime": "2026-10-10T09:30:00+01:00",
+  "notes": "First visit"
+}
+```
 
-Author
+- `provider` is the provider's `_id` (from `GET /public/providers/:slug`).
+- `startTime` must be one of the slots returned by the slots endpoint, in the future.
+- `serviceName`, `customerPhone` and `notes` are optional. If `serviceName` is given, it must be one of the provider's `services`.
+- Don't send `endTime`. The server works it out.
 
-**Your Name**..... Group's Name?
-
-Full-Stack Developer
-
----
-
-
-Project Goal
-
-The goal of this backend is to provide a secure and organized API for an appointment booking application.
-
-The backend allows the frontend to communicate with the database and provides the logic needed to manage:
-
-* Users
-* Services
-* Availability
-* Appointments
-* Authentication
+Returns `201` with the new appointment (`status: "pending"`), or `409` if someone else just took the slot.
 
 ---
 
+## Emails
 
-License
+Emails are sent by [`Services/emailService.js`](Services/emailService.js) through **Brevo's HTTP API**.
+HTTP is used instead of SMTP because Render's free tier blocks SMTP ports.
 
-This project is created for learning and development purposes.
+| Email             | Sent when                                                               | To       |
+| ----------------- | ----------------------------------------------------------------------- | -------- |
+| Welcome           | A provider registers                                                    | Provider |
+| Booking confirmed | The provider confirms an appointment                                    | Customer |
+| Booking cancelled | The provider cancels an appointment                                     | Customer |
+| Reminder          | _Not triggered yet:_ `sendReminder()` exists for a future scheduled job | Customer |
+
+If an email fails, it is logged and the action (sign-up, confirm, cancel) still succeeds.
+
+**Brevo setup checklist**
+
+1. Create an API key: Brevo → _SMTP & API_ → _API Keys_ → put it in `BREVO_API_KEY`.
+2. Verify your sender address: Brevo → _Senders, Domains & Dedicated IPs_ → put it in `SENDER_EMAIL`.
+3. **Turn off IP blocking:** Brevo → _Security_ → [_Authorised IPs_](https://app.brevo.com/security/authorised_ips).
+   Otherwise Brevo rejects requests from new IP addresses with `401 unrecognised IP address`. Home internet and Render both change IPs often, so allowing a single IP is not enough.
+4. Send yourself a test email (edit the recipient in the file first):
+
+   ```bash
+   node Tests/testEmail.js
+   # Sent! { success: true, messageId: '<…@smtp-relay.mailin.fr>' }
+   ```
+
+The free Brevo plan allows **300 emails per day**. New emails sometimes land in **Spam** or **Promotions**.
+
+---
+
+## Security
+
+- Passwords are hashed with **bcrypt** and never returned by the API.
+- Protected routes need a valid **JWT**, and providers can only see and change **their own** availability and appointments.
+- Request bodies are validated before they reach the controllers.
+- **Helmet** sets secure HTTP headers. **hpp** blocks repeated query parameters. **CORS** only allows the frontend's origin.
+- Request bodies are limited to **2 MB** (enough for a 1 MB profile photo).
+- Secrets live in `.env`, which is never committed.
+- **Rate limits** (per IP):
+
+| Route                       | Limit                |
+| --------------------------- | -------------------- |
+| `POST /auth/login`          | 10 requests / 15 min |
+| `POST /auth/register`       | 5 requests / hour    |
+| `POST /public/appointments` | 30 requests / 5 min  |
+
+---
+
+## Testing
+
+There is no automated test suite yet. `npm test` is still the npm placeholder, and the files in `Tests/` (except `testEmail.js`) are empty placeholders.
+
+For now you can test manually:
+
+- **Emails:** `node Tests/testEmail.js` (see [Emails](#emails)).
+- **API:** use Postman, Insomnia, or the VS Code _Thunder Client_ extension. A typical run-through:
+  1. `POST /api/auth/register` → copy the `token`
+  2. `PUT /api/providers/me` with some `services`
+  3. `POST /api/availability` for a future date
+  4. `GET /api/public/providers/<slug>/slots`
+  5. `POST /api/public/appointments` using one of those slots
+  6. `GET /api/appointments` → `PATCH /api/appointments/<id>/confirm`
+
+---
+
+## Deployment
+
+The backend is deployed on **Render** as a Web Service.
+
+| Setting        | Value                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| Root directory | `Book35B`                                                                                       |
+| Build command  | `npm install`                                                                                   |
+| Start command  | `npm start`                                                                                     |
+| Environment    | Add the variables from [Environment variables](#environment-variables) (Render provides `PORT`) |
+
+The production frontend (`https://book35website-1.onrender.com`) is the only origin CORS allows.
+If the frontend URL changes, update `origin` in [`app.js`](app.js).
+
+---
+
+## Known limitations and next steps
+
+- **CORS origin is hard-coded** in `app.js`. It should come from `CLIENT_URL` so local and production work without editing code.
+- **No automated tests yet.** Add Jest + Supertest and fill in the `Tests/` files.
+- **Reminder emails** need a scheduled job (e.g. a cron job) to call `sendReminder()`.
+- **Installed but not enabled:** `express-mongo-sanitize` and `compression` are installed but not used in `app.js`, and `generalLimiter` is defined in `rateLimiter.js` but not applied.
+- **Debug routes:** each router has a `GET /test` route left over from development. Remove these before a final release.
+- **Not built yet:** customer rescheduling, priced services in the UI, SMS notifications, payments, calendar sync.
+
+---
+
+## License
+
+Created for learning and development purposes.
