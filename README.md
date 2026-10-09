@@ -161,11 +161,11 @@ Each app has its own `package.json`, `node_modules` and `.env`. Run `npm` comman
 
 Built by **Capstone Group 35** as part of TS Academy.
 Oluseye Daramola - Group Leader
+Tayo Olagunju - Assistant Group Leader
 Ibrahim Habeeb
 Wusu Oluwadamilola
 Olaiya Michael
 Oguntade Sileola Marvellous
-Tayo Olagunju
 Emem Sampson
 Oyewole Stephen Olamide
 
