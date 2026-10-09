@@ -372,8 +372,10 @@
 }
 
 .pd-header-avatar {
+    flex-shrink: 0;
     width: 54px;
     height: 54px;
+    max-width: none;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid var(--color-gray-200);
@@ -753,6 +755,7 @@ button.pd-availability-item:focus-visible {
 .pd-header-avatar-wrap {
   position: relative;
   display: inline-flex;
+  flex-shrink: 0;
   border: none;
   background: none;
   padding: 0;
@@ -776,6 +779,7 @@ button.pd-availability-item:focus-visible {
 }
 
 .pd-profile-photo {
+  flex-shrink: 0;
   width: 96px;
   height: 96px;
   border-radius: 50%;
