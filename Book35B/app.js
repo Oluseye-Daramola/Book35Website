@@ -20,6 +20,7 @@ const errorHandler = require("./Middleware/errorHandler");
 
 app.use(helmet());
 app.use(cors({ origin: "https://book35website-1.onrender.com" }));
+//http://localhost:5173 for local development, https://book35website-1.onrender.com for production
 // 2mb so a 1 MB profile photo still fits once base64-encoded (~1.37 MB)
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));

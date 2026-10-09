@@ -126,7 +126,7 @@ export const ProviderDashboard = () => {
     //   setProvider(data); // { name, businessName, location, services, ... } from the providers collection
     businessName: user?.businessName || '',
     rating: 4.8,
-    location: 'Lagos',
+    location: '',
     services: ['Service A', 'Service B'],
     businessDescription: '',
     slogan: '',
